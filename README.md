@@ -2,7 +2,7 @@
 
 A web-based simulator for visualizing common CPU scheduling algorithms using C++ and WebAssembly.
 
-![CPU Scheduling Simulator](https://i.imgur.com/YHqYRMZ.png)
+![CPU Scheduling Simulator](image.png)
 
 ## 🚀 Features
 
