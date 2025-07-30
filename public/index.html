@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduler Simulator</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #f72585;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --text-color: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .controls {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .algorithm-section {
+            margin-bottom: 20px;
+        }
+        
+        .algorithm-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+        
+        button {
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .results {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--accent-color);
+            font-weight: bold;
+        }
+        
+        pre {
+            flex-grow: 1;
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            font-family: Consolas, monospace;
+            line-height: 1.5;
+        }
+        
+        #visualization {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+        }
+        
+        .gantt-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .process-row {
+            display: flex;
+            align-items: center;
+            height: 40px;
+        }
+        
+        .process-label {
+            width: 80px;
+            font-weight: bold;
+        }
+        
+        .timeline {
+            flex-grow: 1;
+            display: flex;
+            height: 30px;
+            align-items: center;
+        }
+        
+        .timeline-block {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CPU Scheduling Algorithm Simulator</h1>
+        <div class="subtitle">Visualize and compare FCFS, Round Robin, and SJF algorithms</div>
+    </header>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="algorithm-section">
+                <div class="algorithm-title">First Come, First Served (FCFS)</div>
+                <button id="fcfsBtn">Simulate FCFS</button>
+                <p>Non-preemptive scheduling algorithm that executes processes in order of arrival.</p>
+            </div>
+            
+            <div class="algorithm-section">
+                <div class="algorithm-title">Round Robin (RR)</div>
+                <button id="rrBtn">Simulate Round Robin</button>
+                <div style="display: flex; align-items: center; margin-top: 10px;">
+                    <label for="quantumInput">Quantum: </label>
+                    <input type="number" id="quantumInput" min="1" value="2" style="margin-left: 10px; width: 60px; padding: 5px;">
+                </div>
+                <p>Preemptive scheduling algorithm where each process gets a small unit of CPU time called quantum.</p>
+            </div>
+            
+            <div class="algorithm-section">
+                <div class="algorithm-title">Shortest Job First (SJF)</div>
+                <button id="sjfBtn">Simulate SJF</button>
+                <p>Non-preemptive scheduling algorithm that executes the process with the shortest burst time first.</p>
+            </div>
+        </div>
+        
+        <div class="results">
+            <div class="tab-container">
+                <div class="tab active" id="outputTab">Results</div>
+                <div class="tab" id="visualTab">Visualization</div>
+            </div>
+            
+            <pre id="output">Select an algorithm to see the simulation results.</pre>
+            <div id="visualization" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        CPU Scheduling Algorithm Simulator &copy; 2023 | Built with C++, WebAssembly, and JavaScript
+    </div>
+
+    <script src="scheduler.js"></script>
+    <script>
+        // Wait for the module to be ready
+        Module.onRuntimeInitialized = function() {
+            // Get references to functions
+            const simulateFCFS = Module.cwrap('simulateFCFS', null, []);
+            const simulateRoundRobin = Module.cwrap('simulateRoundRobin', null, ['number']);
+            const simulateSJF = Module.cwrap('simulateSJF', null, []);
+            const getOutput = Module.cwrap('getOutput', 'string', []);
+            
+            // Elements
+            const outputElement = document.getElementById('output');
+            const vizElement = document.getElementById('visualization');
+            const outputTab = document.getElementById('outputTab');
+            const visualTab = document.getElementById('visualTab');
+            const quantumInput = document.getElementById('quantumInput');
+            
+            // Tab switching
+            outputTab.addEventListener('click', function() {
+                outputTab.classList.add('active');
+                visualTab.classList.remove('active');
+                outputElement.style.display = 'block';
+                vizElement.style.display = 'none';
+            });
+            
+            visualTab.addEventListener('click', function() {
+                visualTab.classList.add('active');
+                outputTab.classList.remove('active');
+                vizElement.style.display = 'block';
+                outputElement.style.display = 'none';
+            });
+            
+            // Create a simple visualization based on the output
+            function createVisualization(algorithmName, outputText) {
+                // Parse the output to get process info
+                const lines = outputText.split('\n');
+                const processes = [];
+                
+                for (const line of lines) {
+                    if (line.trim() === '') continue;
+                    
+                    const match = line.match(/Process (\d+): Waiting Time = (\d+), Turnaround Time = (\d+)/);
+                    if (match) {
+                        processes.push({
+                            id: parseInt(match[1]),
+                            waitingTime: parseInt(match[2]),
+                            turnaroundTime: parseInt(match[3])
+                        });
+                    }
+                }
+                
+                // Create visualization HTML
+                vizElement.innerHTML = `<h3>${algorithmName} Visualization</h3>`;
+                
+                // Create Gantt chart
+                const ganttChart = document.createElement('div');
+                ganttChart.className = 'gantt-chart';
+                
+                // Find the maximum turnaround time for scaling
+                const maxTurnaround = Math.max(...processes.map(p => p.turnaroundTime));
+                
+                for (const process of processes) {
+                    const row = document.createElement('div');
+                    row.className = 'process-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'process-label';
+                    label.textContent = `Process ${process.id}`;
+                    
+                    const timeline = document.createElement('div');
+                    timeline.className = 'timeline';
+                    
+                    // Create waiting time block
+                    if (process.waitingTime > 0) {
+                        const waitingBlock = document.createElement('div');
+                        waitingBlock.className = 'timeline-block';
+                        waitingBlock.style.width = `${(process.waitingTime / maxTurnaround) * 100}%`;
+                        waitingBlock.style.backgroundColor = '#e9ecef';
+                        waitingBlock.style.border = '1px solid #ced4da';
+                        waitingBlock.textContent = 'Wait';
+                        timeline.appendChild(waitingBlock);
+                    }
+                    
+                    // Create execution block
+                    const execBlock = document.createElement('div');
+                    execBlock.className = 'timeline-block';
+                    execBlock.style.width = `${((process.turnaroundTime - process.waitingTime) / maxTurnaround) * 100}%`;
+                    execBlock.style.backgroundColor = getProcessColor(process.id);
+                    execBlock.textContent = 'CPU';
+                    timeline.appendChild(execBlock);
+                    
+                    row.appendChild(label);
+                    row.appendChild(timeline);
+                    ganttChart.appendChild(row);
+                }
+                
+                vizElement.appendChild(ganttChart);
+                
+                // Add metrics
+                const metrics = document.createElement('div');
+                metrics.style.marginTop = '20px';
+                
+                const avgWaiting = processes.reduce((sum, p) => sum + p.waitingTime, 0) / processes.length;
+                const avgTurnaround = processes.reduce((sum, p) => sum + p.turnaroundTime, 0) / processes.length;
+                
+                metrics.innerHTML = `
+                    <h4>Performance Metrics</h4>
+                    <p><strong>Average Waiting Time:</strong> ${avgWaiting.toFixed(2)} time units</p>
+                    <p><strong>Average Turnaround Time:</strong> ${avgTurnaround.toFixed(2)} time units</p>
+                `;
+                
+                vizElement.appendChild(metrics);
+            }
+            
+            function getProcessColor(id) {
+                const colors = ['#4361ee', '#3a0ca3', '#f72585', '#4cc9f0', '#4895ef', '#560bad', '#f15bb5'];
+                return colors[(id - 1) % colors.length];
+            }
+            
+            // Set up button listeners
+            document.getElementById('fcfsBtn').addEventListener('click', function() {
+                simulateFCFS();
+                const output = getOutput();
+                outputElement.textContent = output;
+                createVisualization('First Come, First Served (FCFS)', output);
+            });
+            
+            document.getElementById('rrBtn').addEventListener('click', function() {
+                const quantum = parseInt(quantumInput.value) || 2;
+                simulateRoundRobin(quantum);
+                const output = getOutput();
+                outputElement.textContent = output;
+                createVisualization(`Round Robin (Quantum = ${quantum})`, output);
+            });
+            
+            document.getElementById('sjfBtn').addEventListener('click', function() {
+                simulateSJF();
+                const output = getOutput();
+                outputElement.textContent = output;
+                createVisualization('Shortest Job First (SJF)', output);
+            });
+        };
+    </script>
+</body>
+</html>
