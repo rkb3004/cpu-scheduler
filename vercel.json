@@ -1,11 +1,20 @@
 {
-    "builds": [
-        {
-            "src": "public/index.html",
-            "use": "@vercel/static"
-        }
-    ],
-    "routes": [
-        { "src": "/(.*)", "dest": "/public/index.html" }
-    ]
+  "version": 2,
+  "builds": [
+    { "src": "public/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { 
+      "src": "/scheduler.wasm",
+      "headers": { 
+        "content-type": "application/wasm",
+        "cache-control": "public, max-age=0, must-revalidate"
+      },
+      "dest": "/scheduler.wasm"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ]
 }

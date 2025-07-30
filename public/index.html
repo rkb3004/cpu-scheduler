@@ -219,8 +219,34 @@
         CPU Scheduling Algorithm Simulator &copy; 2023 | Built with C++, WebAssembly, and JavaScript
     </div>
 
-    <script src="scheduler.js"></script>
+    <!-- Add this error message div -->
+    <div id="error-message" style="display: none; color: red; text-align: center; margin-top: 20px; padding: 10px; background-color: #ffebee; border-radius: 4px;"></div>
+
     <script>
+        // Error handling function
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = "Error: " + message;
+            errorDiv.style.display = 'block';
+            console.error(message);
+        }
+        
+        // Load the WebAssembly module with error handling
+        window.onerror = function(message, source, lineno, colno, error) {
+            showError(`JavaScript error: ${message}`);
+            return true;
+        };
+    </script>
+
+    <script src="scheduler.js" onerror="showError('Failed to load the scheduler.js file')"></script>
+    <script>
+        // Add timeout to check if Module loaded
+        setTimeout(function() {
+            if (typeof Module === 'undefined') {
+                showError('Module failed to load properly');
+            }
+        }, 3000);
+        
         // Wait for the module to be ready
         Module.onRuntimeInitialized = function() {
             // Get references to functions
