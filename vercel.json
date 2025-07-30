@@ -10,7 +10,11 @@
         "content-type": "application/wasm",
         "cache-control": "public, max-age=0, must-revalidate"
       },
-      "dest": "/scheduler.wasm"
+      "dest": "/public/scheduler.wasm"
+    },
+    { 
+      "src": "/scheduler.js",
+      "dest": "/public/scheduler.js"
     },
     {
       "src": "/(.*)",
